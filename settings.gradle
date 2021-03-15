@@ -1,2 +1,3 @@
+include ':maze'
 include ':app'
 rootProject.name = "JetMaze"

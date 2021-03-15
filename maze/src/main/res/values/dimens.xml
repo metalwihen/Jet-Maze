@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="match_constraint">0dp</dimen>
+    <dimen name="block_wall_width">1dp</dimen>
+    <dimen name="block_center_icon_size">40dp</dimen>
+    <dimen name="block_size">60dp</dimen>
+</resources>
