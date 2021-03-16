@@ -21,7 +21,11 @@ class GameFragment : Fragment() {
                     this.findNavController().navigate(R.id.action_quit_game)
                 }
                 this.cheat.setOnClickListener {
-                    this.findNavController().navigate(R.id.action_win_game)
+                    this.findNavController()
+                        .navigate(
+                            R.id.action_win_game,
+                            Bundle().apply { putBoolean(FinishFragment.ARG_IS_WIN, true) }
+                        )
                 }
             }
     }

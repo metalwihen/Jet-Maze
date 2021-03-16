@@ -17,6 +17,10 @@
         android:id="@+id/finishFragment"
         android:name="co.mewi.jetmaze.fragments.FinishFragment"
         android:label="Finish Fragment" >
+        <argument
+            android:name="isWin"
+            app:argType="boolean"
+            android:defaultValue="false" />
         <action
             android:id="@+id/action_return_home"
             app:destination="@id/homeFragment"
