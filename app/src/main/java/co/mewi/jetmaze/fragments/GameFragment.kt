@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -22,6 +23,15 @@ class GameFragment : Fragment() {
     private lateinit var mainNavController: NavController
     private lateinit var mazeNavController: NavController
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            undoMove()
+            isEnabled = enableCustomBackstack()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -29,18 +39,19 @@ class GameFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupMaze()
 
         mazeNavController = childFragmentManager.findFragmentById(R.id.child_nav_host).let {
             (it as NavHostFragment).navController
         }
         mainNavController = Navigation.findNavController(requireActivity(), R.id.main_nav_host)
 
+        setupMaze()
         setupHostFragmentControls()
         setupChildFragmentControls()
     }
 
-    // GAME SPECIFIC CONTROLS
+    /** GAME SPECIFIC CONTROLS **/
+
     private fun doOnWin(mazeNavigator: MazeNavigator) {
         if (mazeNavigator.isAtFinish()) openFinishScreen(true)
     }
@@ -52,7 +63,6 @@ class GameFragment : Fragment() {
         mazeStepNavigator = MazeNavigator(maze)
     }
 
-    // JETPACK NAVIGATION IN ACTION
 
     private fun setupHostFragmentControls() {
         quit.setOnClickListener {
@@ -61,13 +71,6 @@ class GameFragment : Fragment() {
         cheat.setOnClickListener {
             openFinishScreen(true)
         }
-    }
-
-    private fun openFinishScreen(didWin: Boolean) {
-        mainNavController.navigate(
-            R.id.action_win_game,
-            Bundle().apply { putBoolean(FinishFragment.ARG_IS_WIN, didWin) }
-        )
     }
 
     private fun setupChildFragmentControls() {
@@ -104,21 +107,24 @@ class GameFragment : Fragment() {
             }
         }
         undo.setOnClickListener {
-            if (!mazeStepNavigator.isFirstMove()) {
-                mazeStepNavigator.moveBack()
-                popMazeChildFragment()
+            if (mazeStepNavigator.countMoves() > 1) {
+                undoMove()
             }
         }
     }
 
-    private fun setDefaultChildFragment() {
-        /** HACK
-         * - a default fragment is mandatory via NavController but arguments are unknown during creation
-         * - Therefore, replace the starting fragment with one that has custom arguments
-         */
-        val startX = mazeStepNavigator.maze.start.x
-        val startY = mazeStepNavigator.maze.start.y
-        addMazeChildFragment(startX, startY)
+    private fun undoMove() {
+        mazeStepNavigator.moveBack()
+        popMazeChildFragment()
+    }
+
+    /** JETPACK NAVIGATION IN ACTION **/
+
+    private fun openFinishScreen(didWin: Boolean) {
+        mainNavController.navigate(
+            R.id.action_win_game,
+            Bundle().apply { putBoolean(FinishFragment.ARG_IS_WIN, didWin) }
+        )
     }
 
     private fun addMazeChildFragment(x: Int, y: Int) {
@@ -132,9 +138,27 @@ class GameFragment : Fragment() {
             })
     }
 
-    private fun popMazeChildFragment() {
-        mazeNavController.popBackStack()
+    private fun popMazeChildFragment(): Boolean {
+        return mazeNavController.popBackStack()
     }
+
+    private fun setDefaultChildFragment() {
+        /** HACK
+         * - a default fragment is mandatory via NavController but arguments are unknown during creation
+         * - In a single fragment graph, the starting fragment can not be cleared
+         * - Therefore, create a placeholder fragment as the starting fragment and replace with relevant fragment with custom arguments
+         */
+        val startX = mazeStepNavigator.maze.start.x
+        val startY = mazeStepNavigator.maze.start.y
+        mazeNavController.navigate(
+            R.id.action_setup_maze,
+            Bundle().apply {
+                putInt(MazeChildFragment.ARG_CURRENT_X, startX)
+                putInt(MazeChildFragment.ARG_CURRENT_Y, startY)
+            })
+    }
+
+    private fun enableCustomBackstack() = mazeStepNavigator.countMoves() > 1
 
     companion object {
         @JvmStatic

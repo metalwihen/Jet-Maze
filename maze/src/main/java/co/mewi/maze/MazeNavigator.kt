@@ -18,13 +18,13 @@ class MazeNavigator(val maze: Maze) {
 
     fun getCurrentPosition() = if (history.size > 0) history.peek() else maze.start
 
-    fun isFirstMove() = history.size <= 1
+    fun countMoves() = history.size  // including first default move
 
     fun isAtStart() = getCurrentPosition() == maze.start
 
     fun isAtFinish() = getCurrentPosition() == maze.finish
 
-    fun moveBack(): Position = if (!isFirstMove()) history.pop() else getCurrentPosition()
+    fun moveBack(): Position = if (countMoves() > 1) history.pop() else getCurrentPosition()
 
     fun moveUp(): Position =
         getCurrentPosition().let { current ->
