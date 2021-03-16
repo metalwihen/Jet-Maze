@@ -28,9 +28,9 @@ class MazeGridAdapter : RecyclerView.Adapter<BlockViewHolder>() {
         holder.bind(
             list[position],
             when (position) {
-                start -> android.R.color.transparent
-                current -> android.R.color.holo_blue_bright
-                finish -> android.R.color.holo_green_light
+                current -> R.color.block_current_bgcolor
+                finish -> R.color.block_finish_bgcolor
+                start -> R.color.block_start_bgcolor
                 else -> android.R.color.transparent
             }
         )

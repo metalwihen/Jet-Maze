@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="block_wall_color">@android:color/black</color>
+    <color name="block_start_bgcolor">@android:color/transparent</color>
+    <color name="block_finish_bgcolor">@android:color/holo_green_light</color>
+    <color name="block_current_bgcolor">#3c00ddff</color>
 </resources>

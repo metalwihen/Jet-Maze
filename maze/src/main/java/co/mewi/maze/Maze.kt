@@ -25,7 +25,7 @@ data class Position(
     val y: Int
 )
 
-fun getDefault(context: Context): Maze? {
+fun getDefaultMaze(context: Context): Maze? {
     return MazeJsonParser.fetchJsonStringFromAssetsFolder(context, "sample-maze1.json")
         ?.let { MazeJsonParser.parseJsonString(it) }
 }

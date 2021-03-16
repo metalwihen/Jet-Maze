@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import co.mewi.maze.view.BlockViewItem
 import co.mewi.maze.view.MazeGridAdapter
 import kotlinx.android.synthetic.main.layout_maze.view.*
+import java.lang.IllegalStateException
 
 class MazeComponent(
     context: Context,
@@ -31,20 +32,22 @@ class MazeComponent(
     private fun setupView() {
         val rootView = LayoutInflater.from(context)
             .inflate(R.layout.layout_maze, this, true)
-        getDefault(context)?.let {
-            rootView.grid.layoutManager = GridLayoutManager(context, it.countY)
-            rootView.grid.adapter = listAdapter
-            setup(it)
-        }
     }
 
-    private fun calculateListPosition(countX: Int, x: Int, y: Int) = countX * x + y
+    private fun calculateListPosition(countX: Int, x: Int, y: Int) = countX * y + x
 
-    // VALIDATION
-    // check 1: Is map setup?
-    // check 2: Arguments valid? - non-negative, within map constraint
+    fun setup(maze: Maze, current_x: Int, current_y: Int) {
+        maze.let {
+            rootView.grid.layoutManager = GridLayoutManager(context, it.countY)
+            rootView.grid.adapter = listAdapter
+        }
 
-    fun setup(maze: Maze) {
+        val isXValid = current_x >= 0 && current_x < maze.countX
+        val isYValid = current_y >= 0 && current_y < maze.countY
+        if (!isXValid || !isYValid) {
+            throw IllegalStateException("Invalid Coordinates for Maze Component $current_x , $current_y")
+        }
+
         val list = maze.blocks.map {
             BlockViewItem(
                 hideLeft = it.left,
@@ -58,7 +61,7 @@ class MazeComponent(
             list = list,
             start = calculateListPosition(maze.countX, maze.start.x, maze.start.y),
             finish = calculateListPosition(maze.countX, maze.finish.x, maze.finish.y),
-            current = calculateListPosition(maze.countX, 2, 1)
+            current = calculateListPosition(maze.countX, current_x, current_y)
         )
     }
 }
