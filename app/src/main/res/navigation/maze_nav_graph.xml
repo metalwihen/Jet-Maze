@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/maze_nav_graph"
+    app:startDestination="@+id/mazeChildFragment">
+
+    <fragment
+        android:id="@+id/mazeChildFragment"
+        android:name="co.mewi.jetmaze.child_fragments.MazeChildFragment"
+        android:label="Maze Fragment">
+
+        <action
+            android:id="@+id/action_step_into_maze"
+            app:destination="@id/mazeChildFragment" />
+
+        <argument
+            android:name="current_position_x"
+            app:argType="integer" />
+
+        <argument
+            android:name="current_position_y"
+            app:argType="integer" />
+
+    </fragment>
+
+</navigation>

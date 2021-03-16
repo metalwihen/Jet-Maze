@@ -1,9 +1,11 @@
 package co.mewi.maze
 
+import java.util.*
+
 class MazeNavigator(val maze: Maze) {
 
     private val map = mutableMapOf<String, Block>()
-    private var current = maze.start
+    private var history = Stack<Position>()
 
     init {
         maze.blocks.forEach {
@@ -11,55 +13,80 @@ class MazeNavigator(val maze: Maze) {
             val y = it.y
             map["$x,$y"] = it
         }
+        history.add(getCurrentPosition())
     }
 
-    fun getCurrentPosition() = current
+    fun getCurrentPosition() = if (history.size > 0) history.peek() else maze.start
 
-    fun isAtStart() = current == maze.start
+    fun isFirstMove() = history.size <= 1
 
-    fun isAtFinish() = current == maze.finish
+    fun isAtStart() = getCurrentPosition() == maze.start
 
-    fun moveUp(current: Position): Position =
-        if (allowMoveUp(current))
-            current
-                .copy(y = current.y - 1)
-                .also { pos -> this.current = pos }
-        else
-            current
+    fun isAtFinish() = getCurrentPosition() == maze.finish
 
-    fun moveDown(current: Position): Position =
-        if (allowMoveDown(current))
-            current
-                .copy(y = current.y + 1)
-                .also { pos -> this.current = pos }
-        else
-            current
+    fun moveBack(): Position = if (!isFirstMove()) history.pop() else getCurrentPosition()
 
-    fun moveLeft(current: Position): Position =
-        if (allowMoveLeft(current))
-            current
-                .copy(x = current.x - 1)
-                .also { pos -> this.current = pos }
-        else
-            current
+    fun moveUp(): Position =
+        getCurrentPosition().let { current ->
+            if (allowMoveUp())
+                current
+                    .copy(y = current.y - 1)
+                    .also { pos ->
+                        history.add(pos)
+                    }
+            else
+                current
+        }
 
-    fun moveRight(current: Position): Position =
-        if (allowMoveRight(current))
-            current
-                .copy(x = current.x + 1)
-                .also { pos -> this.current = pos }
-        else
-            current
+    fun moveDown(): Position =
+        getCurrentPosition().let { current ->
+            if (allowMoveDown())
+                current
+                    .copy(y = current.y + 1)
+                    .also { pos ->
+                        history.add(pos)
+                    }
+            else
+                current
+        }
 
-    private fun allowMoveUp(current: Position): Boolean =
-        map["${current.x},${current.y}"]?.let { it.up } ?: false
+    fun moveLeft(): Position =
+        getCurrentPosition().let { current ->
+            if (allowMoveLeft())
+                current
+                    .copy(x = current.x - 1)
+                    .also { pos ->
+                        history.add(pos)
+                    }
+            else
+                current
+        }
 
-    private fun allowMoveDown(current: Position): Boolean =
-        map["${current.x},${current.y}"]?.let { it.down } ?: false
+    fun moveRight(): Position =
+        getCurrentPosition().let { current ->
+            if (allowMoveRight())
+                current
+                    .copy(x = current.x + 1)
+                    .also { pos ->
+                        history.add(pos)
+                    }
+            else
+                current
+        }
 
-    private fun allowMoveLeft(current: Position): Boolean =
-        map["${current.x},${current.y}"]?.let { it.left} ?: false
+    fun allowMoveUp(): Boolean = getCurrentPosition()?.let { current ->
+        map["${current.x},${current.y}"]?.let { it.up }
+    } ?: false
 
-    private fun allowMoveRight(current: Position): Boolean =
-        map["${current.x},${current.y}"]?.let { it.right} ?: false
+    fun allowMoveDown(): Boolean = getCurrentPosition()?.let { current ->
+        map["${current.x},${current.y}"]?.let { it.down }
+    } ?: false
+
+    fun allowMoveLeft(): Boolean = getCurrentPosition()?.let { current ->
+        map["${current.x},${current.y}"]?.let { it.left }
+    } ?: false
+
+    fun allowMoveRight(): Boolean = getCurrentPosition()?.let { current ->
+        map["${current.x},${current.y}"]?.let { it.right }
+    } ?: false
 }

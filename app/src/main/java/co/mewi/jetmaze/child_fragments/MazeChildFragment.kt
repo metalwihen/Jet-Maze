@@ -37,8 +37,8 @@ class MazeChildFragment : Fragment() {
 
     companion object {
 
-        const val ARG_CURRENT_X = "arg_current_position_x"
-        const val ARG_CURRENT_Y = "arg_current_position_y"
+        const val ARG_CURRENT_X = "current_position_x"
+        const val ARG_CURRENT_Y = "current_position_y"
 
         @JvmStatic
         fun newInstance(x: Int, y: Int) =

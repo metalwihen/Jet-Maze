@@ -5,19 +5,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
 import co.mewi.jetmaze.R
 import co.mewi.jetmaze.child_fragments.MazeChildFragment
 import co.mewi.maze.Maze
 import co.mewi.maze.MazeNavigator
 import co.mewi.maze.getDefaultMaze
 import kotlinx.android.synthetic.main.footer_navigator.*
-import kotlinx.android.synthetic.main.footer_navigator.view.*
-import kotlinx.android.synthetic.main.fragment_game.*
 
 class GameFragment : Fragment() {
 
-    private lateinit var mazeNavigator: MazeNavigator
+    private lateinit var mazeStepNavigator: MazeNavigator
+
+    private lateinit var mainNavController: NavController
+    private lateinit var mazeNavController: NavController
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,84 +30,110 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupMaze()
+
+        mazeNavController = childFragmentManager.findFragmentById(R.id.child_nav_host).let {
+            (it as NavHostFragment).navController
+        }
+        mainNavController = Navigation.findNavController(requireActivity(), R.id.main_nav_host)
+
         setupHostFragmentControls()
         setupChildFragmentControls()
     }
 
-    private fun setupHostFragmentControls() {
-        val navController = Navigation.findNavController(requireActivity(), R.id.main_nav_host)
-        requireView().findViewById<View>(R.id.quit)
-            .setOnClickListener {
-                navController.navigate(R.id.action_quit_game)
-            }
-        requireView().findViewById<View>(R.id.cheat)
-            .cheat.setOnClickListener {
-                finishGame(true)
-            }
+    // GAME SPECIFIC CONTROLS
+    private fun doOnWin(mazeNavigator: MazeNavigator) {
+        if (mazeNavigator.isAtFinish()) openFinishScreen(true)
     }
 
-    private fun finishGame(didWin: Boolean) {
-        val navController = Navigation.findNavController(requireActivity(), R.id.main_nav_host)
-        navController.navigate(
+    private fun getMaze(): Maze? = activity?.let { activity -> getDefaultMaze(activity) }
+
+    private fun setupMaze() {
+        val maze = getMaze()!!
+        mazeStepNavigator = MazeNavigator(maze)
+    }
+
+    // JETPACK NAVIGATION IN ACTION
+
+    private fun setupHostFragmentControls() {
+        quit.setOnClickListener {
+            openFinishScreen(false)
+        }
+        cheat.setOnClickListener {
+            openFinishScreen(true)
+        }
+    }
+
+    private fun openFinishScreen(didWin: Boolean) {
+        mainNavController.navigate(
             R.id.action_win_game,
             Bundle().apply { putBoolean(FinishFragment.ARG_IS_WIN, didWin) }
         )
     }
 
-    private fun setupMaze() {
-        val maze = getMaze()!!
-        mazeNavigator = MazeNavigator(maze)
-        addMazeChildFragment(mazeNavigator.maze.start.x, mazeNavigator.maze.start.y)
-    }
-
     private fun setupChildFragmentControls() {
+        // Replace the default fragment with invalid arguments
+        setDefaultChildFragment()
+
         // Setup Navigation Controls
         up.setOnClickListener {
-            val oldPosition = mazeNavigator.getCurrentPosition()
-            val newPosition = mazeNavigator.moveUp(oldPosition)
-            addMazeChildFragment(newPosition.x, newPosition.y)
-            doOnWin(mazeNavigator)
+            if (mazeStepNavigator.allowMoveUp()) {
+                val newPosition = mazeStepNavigator.moveUp()
+                addMazeChildFragment(newPosition.x, newPosition.y)
+                doOnWin(mazeStepNavigator)
+            }
         }
         down.setOnClickListener {
-            val oldPosition = mazeNavigator.getCurrentPosition()
-            val newPosition = mazeNavigator.moveDown(oldPosition)
-            addMazeChildFragment(newPosition.x, newPosition.y)
-            doOnWin(mazeNavigator)
+            if (mazeStepNavigator.allowMoveDown()) {
+                val newPosition = mazeStepNavigator.moveDown()
+                addMazeChildFragment(newPosition.x, newPosition.y)
+                doOnWin(mazeStepNavigator)
+            }
         }
         left.setOnClickListener {
-            val oldPosition = mazeNavigator.getCurrentPosition()
-            val newPosition = mazeNavigator.moveLeft(oldPosition)
-            addMazeChildFragment(newPosition.x, newPosition.y)
-            doOnWin(mazeNavigator)
+            if (mazeStepNavigator.allowMoveLeft()) {
+                val newPosition = mazeStepNavigator.moveLeft()
+                addMazeChildFragment(newPosition.x, newPosition.y)
+                doOnWin(mazeStepNavigator)
+            }
         }
         right.setOnClickListener {
-            val oldPosition = mazeNavigator.getCurrentPosition()
-            val newPosition = mazeNavigator.moveRight(oldPosition)
-            addMazeChildFragment(newPosition.x, newPosition.y)
-            doOnWin(mazeNavigator)
+            if (mazeStepNavigator.allowMoveRight()) {
+                val newPosition = mazeStepNavigator.moveRight()
+                addMazeChildFragment(newPosition.x, newPosition.y)
+                doOnWin(mazeStepNavigator)
+            }
         }
         undo.setOnClickListener {
-            childFragmentManager.
-            popMazeChildFragment()
+            if (!mazeStepNavigator.isFirstMove()) {
+                mazeStepNavigator.moveBack()
+                popMazeChildFragment()
+            }
         }
     }
 
-    private fun doOnWin(mazeNavigator: MazeNavigator) {
-        if (mazeNavigator.isAtFinish()) finishGame(true)
+    private fun setDefaultChildFragment() {
+        /** HACK
+         * - a default fragment is mandatory via NavController but arguments are unknown during creation
+         * - Therefore, replace the starting fragment with one that has custom arguments
+         */
+        val startX = mazeStepNavigator.maze.start.x
+        val startY = mazeStepNavigator.maze.start.y
+        addMazeChildFragment(startX, startY)
     }
 
-    private fun getMaze(): Maze? = activity?.let { activity -> getDefaultMaze(activity) }
-
     private fun addMazeChildFragment(x: Int, y: Int) {
-        childFragmentManager
-            .beginTransaction()
-            .add(R.id.child_nav_host, MazeChildFragment.newInstance(x, y))
-            .commit()
+        // BEFORE: childFragmentManager .beginTransaction() .add(R.id.child_nav_host, MazeChildFragment.newInstance(x, y)).commit()
+        // AFTER:
+        mazeNavController.navigate(
+            R.id.action_step_into_maze,
+            Bundle().apply {
+                putInt(MazeChildFragment.ARG_CURRENT_X, x)
+                putInt(MazeChildFragment.ARG_CURRENT_Y, y)
+            })
     }
 
     private fun popMazeChildFragment() {
-        childFragmentManager
-            .popBackStackImmediate()
+        mazeNavController.popBackStack()
     }
 
     companion object {
