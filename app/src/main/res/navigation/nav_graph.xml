@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="co.mewi.jetmaze.fragments.HomeFragment"
+        android:label="Home Fragment" >
+        <action
+            android:id="@+id/action_start_game"
+            app:destination="@id/GameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/finishFragment"
+        android:name="co.mewi.jetmaze.fragments.FinishFragment"
+        android:label="Finish Fragment" >
+        <action
+            android:id="@+id/action_return_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/GameFragment"
+        android:name="co.mewi.jetmaze.fragments.GameFragment"
+        android:label="Game Fragment" >
+        <action
+            android:id="@+id/action_win_game"
+            app:destination="@id/finishFragment"
+            app:popUpTo="@id/homeFragment"/>
+        <action
+            android:id="@+id/action_quit_game"
+            app:destination="@id/finishFragment"
+            app:popUpTo="@id/homeFragment"/>
+    </fragment>
+
+</navigation>

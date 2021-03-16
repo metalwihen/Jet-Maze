@@ -1,7 +1,8 @@
-package co.mewi.jetmaze
+package co.mewi.jetmaze.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import co.mewi.jetmaze.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
