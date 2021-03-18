@@ -8,25 +8,37 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="co.mewi.jetmaze.fragments.HomeFragment"
-        tools:layout="@layout/fragment_home"
-        android:label="Home Fragment">
+        android:label="Home Fragment"
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_start_game"
-            app:destination="@id/GameFragment" />
+            app:destination="@id/GameFragment"
+            app:enterAnim="@anim/enter_from_right"
+            app:exitAnim="@anim/exit_to_left"
+            app:popEnterAnim="@anim/enter_from_left"
+            app:popExitAnim="@anim/exit_to_right" />
     </fragment>
 
     <fragment
         android:id="@+id/GameFragment"
         android:name="co.mewi.jetmaze.fragments.GameFragment"
-        tools:layout="@layout/fragment_game"
-        android:label="Game Fragment">
+        android:label="Game Fragment"
+        tools:layout="@layout/fragment_game">
         <action
             android:id="@+id/action_win_game"
             app:destination="@id/nested_finish"
+            app:enterAnim="@anim/enter_from_right"
+            app:exitAnim="@anim/exit_to_left"
+            app:popEnterAnim="@anim/enter_from_left"
+            app:popExitAnim="@anim/exit_to_right"
             app:popUpTo="@id/homeFragment" />
         <action
             android:id="@+id/action_quit_game"
             app:destination="@id/nested_finish"
+            app:enterAnim="@anim/enter_from_right"
+            app:exitAnim="@anim/exit_to_left"
+            app:popEnterAnim="@anim/enter_from_left"
+            app:popExitAnim="@anim/exit_to_right"
             app:popUpTo="@id/homeFragment" />
     </fragment>
 

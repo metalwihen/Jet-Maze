@@ -86,21 +86,15 @@ No. There can only be one default nav graph (`app:defaultNavHost`) which decides
 
 However, the backpress can be configured to handle custom backstacks as done on `GameFragment`.
 
-
 **Back path**: GameFragment (MazeChildFragment C -> MazeChildFragment B -> MazeChildFragment A) ->  HomeFragment
 </details>
 
-<br/>
-
-**Custom Back Press**
 
 <details>
 <summary>Can the backpress of a fragment include the backstack of its child fragments? </summary>
 
 Yes, check `GameFragment`. You can override the backpress to pop the backstack of the child fragments before popping the backstack of the parent fragments.
 </details>
-
-<br/>
 
 
 ## Recordings
@@ -128,3 +122,11 @@ Yes, check `GameFragment`. You can override the backpress to pop the backstack o
 * **Backward:** Game (... -> Maze Step B -> Maze Step A) -> Home
 
 <img src="recordings/jetmaze-play-game-custom-backstack.gif" width="360" height="640"/>
+
+#### Custom transitions
+
+* **Path 1:** Home -(action)-> Game -(pop)-> Home
+* **Path 2:** Home -(action)-> Game -(action)-> Finish -(pop)-> Home
+* **Path 3:** Home -(action)-> Game -(action)-> Finish -(action)> Home
+
+<img src="recordings/jetmaze-transitions.gif" width="360" height="640"/>

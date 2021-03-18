@@ -18,6 +18,8 @@
             android:id="@+id/action_return_home"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
+            app:enterAnim="@anim/enter_from_bottom"
+            app:exitAnim="@anim/exit_to_top"
             app:popUpToInclusive="true" />
     </fragment>
 
