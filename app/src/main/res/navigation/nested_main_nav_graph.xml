@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nested_finish"
+    app:startDestination="@id/finishFragment">
+
+    <fragment
+        android:id="@+id/finishFragment"
+        android:name="co.mewi.jetmaze.fragments.FinishFragment"
+        tools:layout="@layout/fragment_finish"
+        android:label="Finish Fragment">
+        <argument
+            android:name="isWin"
+            android:defaultValue="false"
+            app:argType="boolean" />
+        <action
+            android:id="@+id/action_return_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+</navigation>

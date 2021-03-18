@@ -12,6 +12,8 @@ The navigation graph for these fragments are defined in `app/res/navigation/main
 The GameFragment in turn uses child fragments to show different steps taken in the maze.
 The navigation graph for these fragments are defined in `app/res/navigation/maze_nav_graph.xml`
 
+Another navigation graph (located at `app/res/navigation/nested_main_nav_graph.xml`) has also been created to understand how navigation graphs can be used to clean up code.
+
 <img src="recordings/jetmaze-success.gif" width="360" height="640"/>
 
 ## Experiments
