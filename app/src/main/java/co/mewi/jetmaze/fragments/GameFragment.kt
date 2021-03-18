@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -22,11 +23,7 @@ class GameFragment : Fragment() {
 
     private lateinit var mainNavController: NavController
     private lateinit var mazeNavController: NavController
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setupCustomBackpress()
-    }
+    private var backPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,8 +69,6 @@ class GameFragment : Fragment() {
         }
     }
 
-    private fun enableCustomBackstack() = mazeStepNavigator.countMoves() > 1
-
     /** Common - Game & Jetpack **/
 
     private fun setupHostFragmentControls() {
@@ -92,25 +87,30 @@ class GameFragment : Fragment() {
         mazeStepNavigator.setCallback(
             onMove = { newPosition ->
                 addMazeChildFragment(newPosition.x, newPosition.y)
-                doOnWin(mazeStepNavigator)
+                setCustomBackstackBehaviour()
+                if (mazeStepNavigator.isAtFinish()) openFinishScreen(true)
             },
             onUndoMove = {
                 popMazeChildFragment()
+                setCustomBackstackBehaviour()
             }
         )
     }
 
-    private fun doOnWin(mazeNavigator: MazeNavigator) {
-        if (mazeNavigator.isAtFinish()) openFinishScreen(true)
-    }
-
-    private fun setupCustomBackpress() {
-        requireActivity().onBackPressedDispatcher.addCallback(this) {
-            mazeStepNavigator.undoMove()
-            isEnabled = enableCustomBackstack()
+    private fun setCustomBackstackBehaviour() {
+        backPressedCallback?.remove()
+        if (enableCustomBackstack()) {
+            backPressedCallback = createCustomBackpress()
         }
     }
 
+    private fun createCustomBackpress() =
+        requireActivity().onBackPressedDispatcher.addCallback(this, true) {
+            mazeStepNavigator.undoMove()
+        }
+
+    private fun enableCustomBackstack() = !mazeStepNavigator.isAtStart()
+            || mazeStepNavigator.countMoves() != 1
 
     /** JETPACK NAVIGATION IN ACTION **/
 
