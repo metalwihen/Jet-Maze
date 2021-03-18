@@ -8,8 +8,8 @@
     <fragment
         android:id="@+id/finishFragment"
         android:name="co.mewi.jetmaze.fragments.FinishFragment"
-        tools:layout="@layout/fragment_finish"
-        android:label="Finish Fragment">
+        android:label="Finish Fragment"
+        tools:layout="@layout/fragment_finish">
         <argument
             android:name="isWin"
             android:defaultValue="false"
@@ -17,10 +17,32 @@
         <action
             android:id="@+id/action_return_home"
             app:destination="@id/homeFragment"
-            app:popUpTo="@id/homeFragment"
             app:enterAnim="@anim/enter_from_bottom"
             app:exitAnim="@anim/exit_to_top"
+            app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_share"
+            app:destination="@id/shareFragment"
+            app:enterAnim="@anim/enter_from_right"
+            app:exitAnim="@anim/exit_to_left"
+            app:popEnterAnim="@anim/enter_from_left"
+            app:popExitAnim="@anim/exit_to_right"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/shareFragment"
+        android:name="co.mewi.jetmaze.fragments.ShareFragment"
+        android:label="Share Fragment"
+        tools:layout="@layout/fragment_share">
+
+        <argument
+            android:name="is_deeplink"
+            app:argType="boolean" />
+
     </fragment>
 
 </navigation>

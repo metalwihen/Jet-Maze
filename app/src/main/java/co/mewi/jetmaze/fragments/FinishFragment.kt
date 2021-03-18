@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import androidx.navigation.findNavController
 import co.mewi.jetmaze.R
 import kotlinx.android.synthetic.main.fragment_finish.view.*
+import kotlinx.android.synthetic.main.fragment_finish.view.button_share
+import kotlinx.android.synthetic.main.fragment_finish.view.message
+import kotlinx.android.synthetic.main.fragment_share.view.*
 
 class FinishFragment : Fragment() {
 
@@ -27,6 +30,10 @@ class FinishFragment : Fragment() {
                 )
                 this.button_return.setOnClickListener {
                     this.findNavController().navigate(R.id.action_return_home)
+                }
+                this.button_share.visibility = if(isWin) View.VISIBLE else View.GONE
+                this.button_share.setOnClickListener {
+                    this.findNavController().navigate(R.id.action_share)
                 }
             }
     }

@@ -5,8 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.NavController
+import androidx.navigation.NavDeepLinkBuilder
 import androidx.navigation.findNavController
 import co.mewi.jetmaze.R
+import co.mewi.jetmaze.deeplink.NotificationHelper
 import kotlinx.android.synthetic.main.fragment_home.view.*
 
 class HomeFragment : Fragment() {
@@ -20,6 +23,9 @@ class HomeFragment : Fragment() {
             .apply {
                 button_play.setOnClickListener {
                     this.findNavController().navigate(R.id.action_start_game)
+                }
+                button_deeplink.setOnClickListener {
+                        NotificationHelper.imitatePushNotification(context)
                 }
             }
     }

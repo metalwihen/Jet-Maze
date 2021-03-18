@@ -99,6 +99,7 @@ class GameFragment : Fragment() {
 
     private fun setCustomBackstackBehaviour() {
         backPressedCallback?.remove()
+        backPressedCallback = null
         if (enableCustomBackstack()) {
             backPressedCallback = createCustomBackpress()
         }

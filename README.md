@@ -129,4 +129,30 @@ Yes, check `GameFragment`. You can override the backpress to pop the backstack o
 * **Path 2:** Home -(action)-> Game -(action)-> Finish -(pop)-> Home
 * **Path 3:** Home -(action)-> Game -(action)-> Finish -(action)> Home
 
+These are defined in the navigation graphs via
+```
+app:enterAnim="@anim/enter_from_right"
+app:exitAnim="@anim/exit_to_left"
+app:popEnterAnim="@anim/enter_from_left"
+app:popExitAnim="@anim/exit_to_right"
+```
+
 <img src="recordings/jetmaze-transitions.gif" width="360" height="640"/>
+
+#### Deeplinks
+
+##### Default behaviour:
+
+Deeplink -> Share -(pop)-> Finish -(pop)-> Home
+
+This follows the path defined in `main_nav_graph.xml` (Home-> Game -> Finish -> Share). Normally, that's convenient but it sets the default values for the arguments of previous fragments (eg: `FinishFragment` is set `isWin=false`). This can be a problem if the Share Screen is only meant to be opened during a win (or a deeplink that acts as a cheat code to reach the end)
+
+<img src="recordings/jetmaze-deeplink-share-default-path.gif" width="360" height="640"/>
+
+##### Customised with arguments and overriden Backpress:
+
+Deeplink -> Share -(pop)-> Home
+
+The backpress of `ShareFragment` is overriden here with the instruction to pop the backstack up to the `HomeFragment` thereby skipping the screens in between where the default arguments are incorrect.
+
+<img src="recordings/jetmaze-deeplink-share-custom-path.gif" width="360" height="640"/>
