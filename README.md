@@ -16,7 +16,97 @@ Another navigation graph (located at `app/res/navigation/nested_main_nav_graph.x
 
 <img src="recordings/jetmaze-success.gif" width="360" height="640"/>
 
-## Experiments
+
+## Recordings
+
+### Main Navigation Graph Behaviour
+
+* **Forward**: Home -> Game -> Finish (argument: `isWin=false`)
+* **Backward**: Finish -> Home
+
+By defining the `app:popUpTo` in `main_nav_graph.xml`, fragments in the backstack that should not be shown (For example, `GameFragment`) can be popped on back press (from `FinishFragment`).
+
+```
+<action
+    android:id="@+id/action_quit_game"
+    app:destination="@id/nested_finish"
+    app:popUpTo="@id/homeFragment" />
+
+```
+
+<img src="recordings/jetmaze-failure.gif" width="360" height="640"/>
+
+### Two Navigation Graphs (Parent & Child)
+
+* **Forward**: Home -> Game (Maze Step A -> Maze Step B -> ....) -> Finish
+* **Backward**: Finish -> Home
+
+By defining two navigation graphs and referencing them separately in the `GameFragment`, we can control the navigation of child fragments alongside parent fragments.
+
+```
+mazeNavController = childFragmentManager.findFragmentById(R.id.child_nav_host).let {
+    (it as NavHostFragment).navController
+}
+mainNavController = Navigation.findNavController(requireActivity(), R.id.main_nav_host)
+```
+
+Note: While there may be multiple navigation graphs, there can only be one default NavHost which is responsible for the default backstack.
+
+<img src="recordings/jetmaze-play-game-success.gif" width="360" height="640"/>
+
+### Custom Backpress and Backstack (Parent in sync with Child)
+
+* **Forward:** Home -> Game (Maze Step A -> Maze Step B -> ....)
+* **Backward:** Game (... -> Maze Step B -> Maze Step A) -> Home
+
+This was possible only by overriding the BackPress. Check `GameFragment` for how backpress was configured.
+```
+requireActivity().onBackPressedDispatcher.addCallback(this, isEnabled=true) {
+    // perform custom backstack operation
+    isEnabled = false // set to false to reactivate the default backpress behaviour
+}
+```
+
+One particularly tricky item was dealing with mandatory `startDestination`. In `maze_nav_graph.xml`, the `MazeChildFragment` requires arguments provided programatically. However, Jetpack Navigation will load the startDestination fragment with default arguments which creates an invalid state. This was resolved using a hack - ignoring the first fragment added (check `PlaceholderFragment`) and navigating to the relevant fragment (`MazeChildFragment`) once loaded. Also, now that there is one extra fragment in the backstack (`PlaceholderFragment`), it's also important to track this extra fragment in the navigation graph (handled in `GameFragment`) to ensure a consistent experience when using Backpress.
+
+<img src="recordings/jetmaze-play-game-custom-backstack.gif" width="360" height="640"/>
+
+### Custom transitions
+
+* **Path 1:** Home -(action)-> Game -(pop)-> Home
+* **Path 2:** Home -(action)-> Game -(action)-> Finish -(pop)-> Home
+* **Path 3:** Home -(action)-> Game -(action)-> Finish -(action)> Home
+
+These are defined in the navigation graphs via
+```
+app:enterAnim="@anim/enter_from_right"
+app:exitAnim="@anim/exit_to_left"
+app:popEnterAnim="@anim/enter_from_left"
+app:popExitAnim="@anim/exit_to_right"
+```
+
+<img src="recordings/jetmaze-transitions.gif" width="360" height="640"/>
+
+### Deeplinks
+
+#### Default behaviour:
+
+Deeplink -> Share -(pop)-> Finish -(pop)-> Home
+
+This follows the path defined in `main_nav_graph.xml` (Home-> Game -> Finish -> Share). Normally, that's convenient but it sets the default values for the arguments of previous fragments (eg: `FinishFragment` is set `isWin=false`). This can be a problem if the Share Screen is only meant to be opened during a win (or a deeplink that acts as a cheat code to reach the end)
+
+<img src="recordings/jetmaze-deeplink-share-default-path.gif" width="360" height="640"/>
+
+#### Customised with arguments and overriden Backpress:
+
+Deeplink -> Share -(pop)-> Home
+
+The backpress of `ShareFragment` is overriden here with the instruction to pop the backstack up to the `HomeFragment` thereby skipping the screens in between where the default arguments are incorrect.
+
+<img src="recordings/jetmaze-deeplink-share-custom-path.gif" width="360" height="640"/>
+
+
+## Other Experiments
 
 **Forward Navigation**
 
@@ -95,64 +185,3 @@ However, the backpress can be configured to handle custom backstacks as done on 
 
 Yes, check `GameFragment`. You can override the backpress to pop the backstack of the child fragments before popping the backstack of the parent fragments.
 </details>
-
-
-## Recordings
-
-#### Main Navigation Graph Behaviour
-
-* **Forward**: Home -> Game -> Finish (argument: `isWin=false`)
-
-* **Backward**: Finish -> Home
-
-<img src="recordings/jetmaze-failure.gif" width="360" height="640"/>
-
-#### Two Navigation Graphs (Parent & Child)
-
-* **Forward**: Home -> Game (Maze Step A -> Maze Step B -> ....) -> Finish
-
-* **Backward**: Finish -> Home
-
-<img src="recordings/jetmaze-play-game-success.gif" width="360" height="640"/>
-
-#### Custom Backpress and Backstack (Parent in sync with Child)
-
-* **Forward:** Home -> Game (Maze Step A -> Maze Step B -> ....)
-
-* **Backward:** Game (... -> Maze Step B -> Maze Step A) -> Home
-
-<img src="recordings/jetmaze-play-game-custom-backstack.gif" width="360" height="640"/>
-
-#### Custom transitions
-
-* **Path 1:** Home -(action)-> Game -(pop)-> Home
-* **Path 2:** Home -(action)-> Game -(action)-> Finish -(pop)-> Home
-* **Path 3:** Home -(action)-> Game -(action)-> Finish -(action)> Home
-
-These are defined in the navigation graphs via
-```
-app:enterAnim="@anim/enter_from_right"
-app:exitAnim="@anim/exit_to_left"
-app:popEnterAnim="@anim/enter_from_left"
-app:popExitAnim="@anim/exit_to_right"
-```
-
-<img src="recordings/jetmaze-transitions.gif" width="360" height="640"/>
-
-#### Deeplinks
-
-##### Default behaviour:
-
-Deeplink -> Share -(pop)-> Finish -(pop)-> Home
-
-This follows the path defined in `main_nav_graph.xml` (Home-> Game -> Finish -> Share). Normally, that's convenient but it sets the default values for the arguments of previous fragments (eg: `FinishFragment` is set `isWin=false`). This can be a problem if the Share Screen is only meant to be opened during a win (or a deeplink that acts as a cheat code to reach the end)
-
-<img src="recordings/jetmaze-deeplink-share-default-path.gif" width="360" height="640"/>
-
-##### Customised with arguments and overriden Backpress:
-
-Deeplink -> Share -(pop)-> Home
-
-The backpress of `ShareFragment` is overriden here with the instruction to pop the backstack up to the `HomeFragment` thereby skipping the screens in between where the default arguments are incorrect.
-
-<img src="recordings/jetmaze-deeplink-share-custom-path.gif" width="360" height="640"/>

@@ -31,7 +31,7 @@ class ShareFragment : Fragment() {
     private fun setCustomBackstack() {
         val isDeeplink = arguments?.getBoolean(ARG_IS_DEEPLINK) ?: false
         requireActivity().onBackPressedDispatcher.addCallback(this, isDeeplink) {
-            requireView().findNavController().popBackStack(R.id.homeFragment, true)
+            requireView().findNavController().popBackStack(R.id.homeFragment,false)
         }
     }
 
