@@ -25,11 +25,7 @@ class GameFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        requireActivity().onBackPressedDispatcher.addCallback(this) {
-            undoMove()
-            isEnabled = enableCustomBackstack()
-        }
+        setupCustomBackpress()
     }
 
     override fun onCreateView(
@@ -52,17 +48,33 @@ class GameFragment : Fragment() {
 
     /** GAME SPECIFIC CONTROLS **/
 
-    private fun doOnWin(mazeNavigator: MazeNavigator) {
-        if (mazeNavigator.isAtFinish()) openFinishScreen(true)
-    }
-
     private fun getMaze(): Maze? = activity?.let { activity -> getDefaultMaze(activity) }
 
     private fun setupMaze() {
         val maze = getMaze()!!
         mazeStepNavigator = MazeNavigator(maze)
+
+        // Setup Navigation Controls
+        up.setOnClickListener {
+            mazeStepNavigator.moveUp()
+        }
+        down.setOnClickListener {
+            mazeStepNavigator.moveDown()
+        }
+        left.setOnClickListener {
+            mazeStepNavigator.moveLeft()
+        }
+        right.setOnClickListener {
+            mazeStepNavigator.moveRight()
+        }
+        undo.setOnClickListener {
+            mazeStepNavigator.undoMove()
+        }
     }
 
+    private fun enableCustomBackstack() = mazeStepNavigator.countMoves() > 1
+
+    /** Common - Game & Jetpack **/
 
     private fun setupHostFragmentControls() {
         quit.setOnClickListener {
@@ -77,46 +89,28 @@ class GameFragment : Fragment() {
         // Replace the default fragment with invalid arguments
         setDefaultChildFragment()
 
-        // Setup Navigation Controls
-        up.setOnClickListener {
-            if (mazeStepNavigator.allowMoveUp()) {
-                val newPosition = mazeStepNavigator.moveUp()
+        mazeStepNavigator.setCallback(
+            onMove = { newPosition ->
                 addMazeChildFragment(newPosition.x, newPosition.y)
                 doOnWin(mazeStepNavigator)
+            },
+            onUndoMove = {
+                popMazeChildFragment()
             }
-        }
-        down.setOnClickListener {
-            if (mazeStepNavigator.allowMoveDown()) {
-                val newPosition = mazeStepNavigator.moveDown()
-                addMazeChildFragment(newPosition.x, newPosition.y)
-                doOnWin(mazeStepNavigator)
-            }
-        }
-        left.setOnClickListener {
-            if (mazeStepNavigator.allowMoveLeft()) {
-                val newPosition = mazeStepNavigator.moveLeft()
-                addMazeChildFragment(newPosition.x, newPosition.y)
-                doOnWin(mazeStepNavigator)
-            }
-        }
-        right.setOnClickListener {
-            if (mazeStepNavigator.allowMoveRight()) {
-                val newPosition = mazeStepNavigator.moveRight()
-                addMazeChildFragment(newPosition.x, newPosition.y)
-                doOnWin(mazeStepNavigator)
-            }
-        }
-        undo.setOnClickListener {
-            if (mazeStepNavigator.countMoves() > 1) {
-                undoMove()
-            }
+        )
+    }
+
+    private fun doOnWin(mazeNavigator: MazeNavigator) {
+        if (mazeNavigator.isAtFinish()) openFinishScreen(true)
+    }
+
+    private fun setupCustomBackpress() {
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            mazeStepNavigator.undoMove()
+            isEnabled = enableCustomBackstack()
         }
     }
 
-    private fun undoMove() {
-        mazeStepNavigator.moveBack()
-        popMazeChildFragment()
-    }
 
     /** JETPACK NAVIGATION IN ACTION **/
 
@@ -157,8 +151,6 @@ class GameFragment : Fragment() {
                 putInt(MazeChildFragment.ARG_CURRENT_Y, startY)
             })
     }
-
-    private fun enableCustomBackstack() = mazeStepNavigator.countMoves() > 1
 
     companion object {
         @JvmStatic

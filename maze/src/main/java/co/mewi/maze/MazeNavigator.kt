@@ -7,6 +7,9 @@ class MazeNavigator(val maze: Maze) {
     private val map = mutableMapOf<String, Block>()
     private var history = Stack<Position>()
 
+    private var onMove: (pos: Position) -> Unit = {}
+    private var onUndoMove: (pos: Position) -> Unit = {}
+
     init {
         maze.blocks.forEach {
             val x = it.x
@@ -14,6 +17,14 @@ class MazeNavigator(val maze: Maze) {
             map["$x,$y"] = it
         }
         history.add(getCurrentPosition())
+    }
+
+    fun setCallback(
+        onMove: ((pos: Position) -> Unit)?,
+        onUndoMove: ((pos: Position) -> Unit)?
+    ) {
+        this.onMove = onMove?.let { it } ?: {}
+        this.onUndoMove = onUndoMove?.let { it } ?: {}
     }
 
     fun getCurrentPosition() = if (history.size > 0) history.peek() else maze.start
@@ -24,16 +35,21 @@ class MazeNavigator(val maze: Maze) {
 
     fun isAtFinish() = getCurrentPosition() == maze.finish
 
-    fun moveBack(): Position = if (countMoves() > 1) history.pop() else getCurrentPosition()
+    fun undoMove(): Position =
+        if (countMoves() > 1) {
+            history
+                .pop()
+                .also { pos -> onUndoMove(pos) }
+        } else {
+            getCurrentPosition()
+        }
 
     fun moveUp(): Position =
         getCurrentPosition().let { current ->
             if (allowMoveUp())
                 current
                     .copy(y = current.y - 1)
-                    .also { pos ->
-                        history.add(pos)
-                    }
+                    .also(::performMove)
             else
                 current
         }
@@ -43,9 +59,7 @@ class MazeNavigator(val maze: Maze) {
             if (allowMoveDown())
                 current
                     .copy(y = current.y + 1)
-                    .also { pos ->
-                        history.add(pos)
-                    }
+                    .also(::performMove)
             else
                 current
         }
@@ -55,9 +69,7 @@ class MazeNavigator(val maze: Maze) {
             if (allowMoveLeft())
                 current
                     .copy(x = current.x - 1)
-                    .also { pos ->
-                        history.add(pos)
-                    }
+                    .also(::performMove)
             else
                 current
         }
@@ -67,9 +79,7 @@ class MazeNavigator(val maze: Maze) {
             if (allowMoveRight())
                 current
                     .copy(x = current.x + 1)
-                    .also { pos ->
-                        history.add(pos)
-                    }
+                    .also(::performMove)
             else
                 current
         }
@@ -89,4 +99,9 @@ class MazeNavigator(val maze: Maze) {
     fun allowMoveRight(): Boolean = getCurrentPosition()?.let { current ->
         map["${current.x},${current.y}"]?.let { it.right }
     } ?: false
+
+    private fun performMove(newPosition: Position) {
+        history.add(newPosition)
+        onMove.invoke(newPosition)
+    }
 }
